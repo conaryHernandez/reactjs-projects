@@ -1,11 +1,11 @@
 import React from 'react';
 
-const withClassHOC = (WrappedComponent, classes) => {
-	return props => {
-		<div className={classes}>
-			<WrappedComponent />
-		</div>
-	}
-}
+const withClassHOC = (WrappedComponent, className) => {
+  return props => (
+    <div className={className}>
+      <WrappedComponent {...props}/>
+    </div>
+  );
+};
 
 export default withClassHOC;
