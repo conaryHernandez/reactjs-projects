@@ -21,6 +21,17 @@ class BurgerBuilder extends Component {
             meat: 0
         },
         totalPrice: 0,
+        purchasabled: false,
+    }
+
+    updatePurchaseState = (ingredients) => {
+        const sum = Object.keys(ingredients)
+            .map(igKey => ingredients[igKey])
+            .reduce((sum, el) => {
+                return sum + el;
+            }, 0);
+
+        this.setState({ purchasabled: sum > 0 });
     }
 
     addIngredient = (type) => () => {
@@ -33,14 +44,17 @@ class BurgerBuilder extends Component {
         const priceAddition = totalPrice + INGREDIENT_PRICES[type];
 
         this.setState({ ingredients: updatedIngredients, totalPrice: priceAddition });
+        this.updatePurchaseState(updatedIngredients);
     }
 
     removeIngredient = (type) => () => {
-        const newCount = this.state.ingredients[type] - 1;
+        const oldCount = this.state.ingredients[type];
 
-        if (newCount > 0) {
+        if (oldCount <= 0) {
             return;
         }
+
+        const newCount = oldCount - 1;
         const updatedIngredients = {...this.state.ingredients};
         const totalPrice = this.state.totalPrice;
 
@@ -49,14 +63,13 @@ class BurgerBuilder extends Component {
         const priceDeduction = totalPrice - INGREDIENT_PRICES[type];
 
         this.setState({ ingredients: updatedIngredients, totalPrice: priceDeduction });
+        this.updatePurchaseState(updatedIngredients);
     }
 
     isDisabled = () => {
         const disabledInfo = {
             ...this.state.ingredients
         };
-
-        console.log('isDisabled');
 
         for (let key in disabledInfo) {
             disabledInfo[key] = disabledInfo[key] <= 0
@@ -73,6 +86,8 @@ class BurgerBuilder extends Component {
                 <BuildControls
                     ingredientAdded={this.addIngredient}
                     ingredientRemoved={this.removeIngredient}
+                    totalPrice={this.state.totalPrice}
+                    purchasabled={this.state.purchasabled}
                     disabled={this.isDisabled()}
                 />
             </Aux>

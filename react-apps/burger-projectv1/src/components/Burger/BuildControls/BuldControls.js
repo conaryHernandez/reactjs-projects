@@ -25,7 +25,13 @@ const BuildControls = (props) => {
 
     return (
         <div className={classes.BuildControls}>
+            <p>Current Price: <strong>{(props.totalPrice).toFixed(2) || 0}</strong></p>
             {renderBuildControls()}
+            <button
+                className={classes.OrderButton}
+                disabled={!props.purchasabled} >
+                Order Now!
+            </button>
         </div>
     );
 };
