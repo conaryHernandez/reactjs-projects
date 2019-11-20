@@ -26,9 +26,14 @@ const rootReducer = (state = initialState, action) => {
 // store
 const store = reduxStore(rootReducer);
 console.log(store.getState());
+
+// subscription, function is executed in every state update
+store.subscribe(() => {
+    console.log('subscription', store.getState());
+});
+
 // action
 store.dispatch({ type: 'INC_COUNTER' });
 store.dispatch({ type: 'ADD_COUNTER', value: 10 });
 console.log(store.getState());
 
-// subscription
