@@ -8,33 +8,8 @@ import classes from './ContactData.css';
 import axios from '../../../axios-orders';
 import withErrorHandler from '../../../hoc/withErrorHandler/withErrorHandler';
 import * as actions from '../../../store/actions/order';
-
-const buildFormElement = (
-		inputType = 'input',
-		type = 'text',
-		placeholder = 'Your placeholder...',
-		value = '',
-		validations = {},
-		additionalProperties = {}
-	) => {
-	let options = {};
-
-  options = {
-  	elementType: inputType,
-  	elementConfig: {
-  		type: type,
-  		placeholder: placeholder,
-  		...additionalProperties
-  	},
-  	value,
-  	validations,
-  	valid: false,
-  	touched: false,
-  };
-
-	return options;
-}
-
+import { buildFormElement, checkValidity, buildFormElements } from '../../../utils/utils';
+ 
 const deliveryOptions = [
 	{value: 'fastest', displayValue: 'fastest'},
 	{value: 'cheapest', displayValue: 'cheapest'}
@@ -80,7 +55,7 @@ class ContactData extends Component {
 		let formIsValid = true;
 
 		updatedForm[name].value = value;
-		updatedForm[name].valid = this.checkValidity(updatedForm[name].value, updatedForm[name].validations);
+		updatedForm[name].valid = checkValidity(updatedForm[name].value, updatedForm[name].validations);
 		updatedForm[name].touched = true;
 
 		for (let inputIdentifier in updatedForm) {
@@ -90,38 +65,8 @@ class ContactData extends Component {
 		this.setState({ orderForm: updatedForm, formIsValid });
 	}
 
-	checkValidity = (value, rules) => {
-		let isValid = true;
-
-		if (!rules) {
-			return true;
-		}
-
-		if (rules.required) {
-			isValid = value.trim() !== '' && isValid;
-		}
-
-		if (rules.minLength) {
-			isValid = value.length >= rules.minLength && isValid;
-		}
-
-		if (rules.maxLength) {
-			isValid = value.length <= rules.minLength && isValid;
-		}
-
-		return isValid;
-	}
-
 	render() {
-		const formElementsArray = [];
-
-		for (let key in this.state.orderForm) {
-			formElementsArray.push({
-				id: key,
-				config: this.state.orderForm[key],
-				name: key
-			});
-		}
+		const formElementsArray = buildFormElements(this.state.orderForm);
 
 		if(this.props.loading) {
 
