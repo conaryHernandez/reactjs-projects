@@ -2,14 +2,18 @@ import React, { Component } from 'react';
 import { buildFormElement, checkValidity, buildFormElements} from '../../utils/utils';
 import Input from '../../components/UI/Input/Input';
 import Button from '../../components/UI/Button/Button';
+import Spinner from '../../components/UI/Spinner/Spinner';
 import classes from './Auth.css';
+import * as actions from '../../store/actions/auth';
+import { connect} from 'react-redux';
 
 class Auth extends Component {
     state = {
         controls: {
 			name: buildFormElement('input', 'text', 'Your name...', '', {required: true}),
 			password: buildFormElement('input', 'password', 'Your password...', '', {required: true}),
-        }
+        },
+        isSignup: true,
     }
 
     inputChangedHandler = (event) => {
@@ -28,12 +32,43 @@ class Auth extends Component {
 		this.setState({ controls: updatedForm, formIsValid });
     }
 
+    submitHandler = (event) => {
+        event.preventDefault();
+
+        this.props.onAuth(this.state.controls.name.value, this.state.controls.password.value, this.state.isSignup);
+    }
+
+    switchSignHandler = () => {
+        this.setState(prevState => {
+            return {
+                isSignup: !prevState.isSignup
+            };
+        });
+    }
+
+    buildErrorMessage = (error) => {
+        let errorLabel = null;
+
+        if (error) {
+            errorLabel = <p>{error.message}</p>;
+        }
+
+        return errorLabel;
+    }
+
+
     render() {
+        const errorMessage = this.buildErrorMessage(this.props.error);
         const formElementsArray = buildFormElements(this.state.controls);
+        
+        if(this.props.loading) {
+            return <Spinner />;
+        }
 
         return(
             <div className={classes.Auth}>
-                <form>
+                {errorMessage}
+                <form onSubmit={this.submitHandler}>
                     { formElementsArray.map(formElement => (
 						<Input
 							key={formElement.id}
@@ -50,9 +85,23 @@ class Auth extends Component {
 					)}
                     <Button btnType="success">Submit</Button>
                 </form>
+                <Button clicked={this.switchSignHandler} btnType="Danger">Switch to {this.state.isSignup ? 'Sign In': 'Sign Up'}</Button>
             </div>
         );
     }
 }
 
-export default Auth;
+const mapStateToProps = (state) => {
+    return {
+        loading: state.auth.loading,
+        error: state.auth.error
+    };
+};
+
+const mapDispatchToProps = dispatch => {
+    return {
+        onAuth: (email, password, isSignUp) => dispatch(actions.auth(email, password, isSignUp)),
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Auth);
