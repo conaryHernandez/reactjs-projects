@@ -6,6 +6,7 @@ import Spinner from '../../components/UI/Spinner/Spinner';
 import classes from './Auth.css';
 import * as actions from '../../store/actions/auth';
 import { connect} from 'react-redux';
+import {Redirect } from 'react-router-dom';
 
 class Auth extends Component {
     state = {
@@ -14,6 +15,12 @@ class Auth extends Component {
 			password: buildFormElement('input', 'password', 'Your password...', '', {required: true}),
         },
         isSignup: true,
+    }
+
+    componentDidMount() {
+        if(!this.props.buildingBurger && this.props.authRedirect) {
+            this.props.onSetAuthRedirect()
+        }
     }
 
     inputChangedHandler = (event) => {
@@ -65,6 +72,10 @@ class Auth extends Component {
             return <Spinner />;
         }
 
+        if(this.props.isAuth) {
+            return <Redirect to={this.props.authRedirect} />;
+        }
+
         return(
             <div className={classes.Auth}>
                 {errorMessage}
@@ -83,9 +94,14 @@ class Auth extends Component {
 						/>
 						)
 					)}
-                    <Button btnType="success">Submit</Button>
+                    <Button btnType="success" disabled={!this.state.formIsValid}>Submit</Button>
                 </form>
-                <Button clicked={this.switchSignHandler} btnType="Danger">Switch to {this.state.isSignup ? 'Sign In': 'Sign Up'}</Button>
+                <Button
+                    clicked={this.switchSignHandler}
+                    btnType="Danger"
+                >
+                    Switch to {this.state.isSignup ? 'Sign In': 'Sign Up'}
+                </Button>
             </div>
         );
     }
@@ -94,13 +110,17 @@ class Auth extends Component {
 const mapStateToProps = (state) => {
     return {
         loading: state.auth.loading,
-        error: state.auth.error
+        error: state.auth.error,
+        isAuth: state.auth.token !== '',
+        buildingBurger: state.burgerBuilder.building,
+        authRedirect: state.auth.authRedirect
     };
 };
 
 const mapDispatchToProps = dispatch => {
     return {
         onAuth: (email, password, isSignUp) => dispatch(actions.auth(email, password, isSignUp)),
+        onSetAuthRedirect: () => dispatch(actions.setAuthRedirect('/'))
     };
 };
 
