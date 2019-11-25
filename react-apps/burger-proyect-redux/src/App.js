@@ -1,15 +1,17 @@
 import React, { Component } from 'react';
+
 import { connect } from 'react-redux';
-
-import Layout from './components/Layout/Layout';
-import BurgerBuilder from './containers/BurgerBuilder/BurgerBuilder';
-import Checkout from './containers/Checkout/Checkout';
-import Orders from './containers/Orders/Orders';
-import Auth from './containers/Auth/Auth';
-
 import { Route, Switch, withRouter, Redirect } from 'react-router-dom';
-import Logout from './containers/Auth/Logout/Logout';
+import Layout from './components/Layout/Layout';
 import * as actions from './store/actions';
+import Spinner from './components/UI/Spinner/Spinner';
+
+// routes
+const BurgerBuilder = React.lazy(() => import('./containers/BurgerBuilder/BurgerBuilder'));
+const Checkout = React.lazy(() => import('./containers/Checkout/Checkout'));
+const Orders = React.lazy(() => import('./containers/Orders/Orders'));
+const Auth = React.lazy(() => import('./containers/Auth/Auth'));
+const Logout = React.lazy(() => import('./containers/Auth/Logout/Logout'));
 
 class App extends Component {
 
@@ -32,6 +34,7 @@ class App extends Component {
           <Route path="/logout" component={Logout} />
           <Route path="/checkout" component={Checkout} />
           <Route path="/orders" component={Orders} />
+          <Route path="/auth" component={Auth} />
           <Route path="/" exact component={BurgerBuilder} />
           <Redirect to="/"/>
         </Switch>
@@ -40,9 +43,11 @@ class App extends Component {
     
     return (
       <div>
-        <Layout>
-          {routes}
-        </Layout>
+        <React.Suspense fallback={<Spinner />}>
+          <Layout>
+            {routes}
+          </Layout>
+        </React.Suspense>
       </div>
     );
   }

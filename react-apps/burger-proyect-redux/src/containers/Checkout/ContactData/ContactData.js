@@ -22,7 +22,7 @@ class ContactData extends Component {
 			street: buildFormElement('input', 'text', 'Street...', '', {required: true}),
 			zipCode: buildFormElement('input', 'text', 'Zip Code...', '', {required: true, minLength: 5, maxLength: 7}),
 			country: buildFormElement('input', 'text', 'Country', '', {required: true}),
-			email: buildFormElement('input', 'email', 'Your email...', '', {required: true}),
+			email: buildFormElement('input', 'email', 'Your email...', '', {required: true, isEmail: true}),
     		deliveryMethod: buildFormElement('select', 'text', 'Your deliveryMethod...', 'fastest', {} , {options: deliveryOptions}),
 		},
 		formIsValid: false,
