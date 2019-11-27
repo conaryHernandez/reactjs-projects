@@ -4,14 +4,15 @@ import Card from '../UI/Card';
 import './IngredientForm.css';
 
 const IngredientForm = React.memo(props => {
-  const inputState = useState({
-    title: '',
-    amount: ''
-  });
+  const [enteredTitle, setEnteredTitle ] = useState('');
+  const [enteredAmount, setEnteredAmount ] = useState('');
 
   const submitHandler = event => {
     event.preventDefault();
-    // ...
+    props.onAddIngredient({
+      title: enteredTitle,
+      amount: enteredAmount
+    });
   };
 
   return (
@@ -24,16 +25,8 @@ const IngredientForm = React.memo(props => {
               type="text"
               id="title"
               name="title"
-              value={inputState[0].title}
-              onChange={e => {
-                const newTitle = e.target.value;
-                const name = e.target.name;
-                inputState[1](prevState => ({
-                    [name]: newTitle,
-                    amount: prevState.amount
-                  })
-                )}
-              }
+              value={enteredTitle}
+              onChange={e => setEnteredTitle(e.target.value)}
             />
           </div>
           <div className="form-control">
@@ -42,17 +35,8 @@ const IngredientForm = React.memo(props => {
               type="number"
               id="amount"
               name="amount"
-              value={inputState[0].amount}
-              onChange={e =>  {
-                const newAmount = e.target.value;
-                const name = e.target.name;
-                  
-                inputState[1](prevState => ({
-                    [name]: newAmount,
-                    title: inputState[0].title
-                  })
-                )}
-              }
+              value={enteredAmount}
+              onChange={e => setEnteredAmount(e.target.value) }
             />
           </div>
           <div className="ingredient-form__actions">
@@ -65,3 +49,27 @@ const IngredientForm = React.memo(props => {
 });
 
 export default IngredientForm;
+
+
+// as reference
+
+/**
+ * <div className="form-control">
+    <label htmlFor="title">Name</label>
+    <input
+      type="text"
+      id="title"
+      name="title"
+      value={inputState.title}
+      onChange={e => {
+        const newTitle = e.target.value;
+        const name = e.target.name;
+        setInputState(prevState => ({
+            [name]: newTitle,
+            amount: prevState.amount
+          })
+        )}
+      }
+    />
+  </div>
+ */
