@@ -1,75 +1,118 @@
-import React, { useState, useEffect } from 'react';
+import React, { useReducer, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
 import IngredientForm from './IngredientForm';
 import IngredientList from './IngredientList';
-
+import ErrorModal from '../UI/ErrorModal';
 import Search from './Search';
 
-function Ingredients() {
-  const [ ingredients, setIngredients ] = useState([]);
-  const [ filteredIngredients, setFilteredIngredients ] = useState([]);
-  const [ ingredientsToDisplay, setIngredientsToDisplay ] = useState(ingredients);
+const ingredientReducer = (currentIngredients, action) => {
+  switch (action.type) {
+    case 'SET':
+      return action.ingredients;
+    case 'ADD':
+      return [...currentIngredients, action.ingredient];
+    case 'DELETE':
+      return currentIngredients.filter(ing => ing.id !== action.id);
+    default:
+      throw new Error('Should not get there!');
+  }
+};
+
+const httpReducer = (curHttpState, action) => {
+  switch (action.type) {
+    case 'SEND':
+      return { loading: true, error: null };
+    case 'RESPONSE':
+      return { ...curHttpState, loading: false };
+    case 'ERROR':
+      return { loading: false, error: action.errorMessage };
+    case 'CLEAR':
+      return { ...curHttpState, error: null };
+    default:
+      throw new Error('Should not be reached!');
+  }
+};
+
+const Ingredients = () => {
+  const [userIngredients, dispatch] = useReducer(ingredientReducer, []);
+  const [httpState, dispatchHttp] = useReducer(httpReducer, {
+    loading: false,
+    error: null
+  });
 
   useEffect(() => {
+    console.log('RENDERING INGREDIENTS', userIngredients);
+  }, [userIngredients]);
 
-    async function fetchIngredients() {
-      
-      try {
-        const response = await axios.get('https://food-22d6b.firebaseio.com/ingredients.json');
-        const loadedIngredients = [];
-
-        for(const key in response.data) {
-          loadedIngredients.push({
-            id:  key,
-            title: response.data[key].title,
-            amount: response.data[key].amount,
-          });
-        }
-
-        setIngredients(loadedIngredients);
-        
-      } catch (error) {
-        console.log(error);
-      }  
-    }
-    fetchIngredients();
+  const filteredIngredientsHandler = useCallback(filteredIngredients => {
+    // setUserIngredients(filteredIngredients);
+    dispatch({ type: 'SET', ingredients: filteredIngredients });
   }, []);
 
-  useEffect(() => {
-    if (filteredIngredients.length > 0) {
-      setIngredientsToDisplay(filteredIngredients);
-    } else {
-      setIngredientsToDisplay(ingredients);
+  const addIngredientHandler = async(ingredient) => {
+    try {
+      dispatchHttp({ type: 'SEND' });
+
+      const responseData = await axios.post('https://food-22d6b.firebaseio.com/ingredients.json', ingredient);
+
+      dispatchHttp({ type: 'RESPONSE' });
+
+      dispatch({
+        type: 'ADD',
+        ingredient: { id: responseData.name, ...ingredient }
+      });
+        
+    } catch (error) {
+      dispatchHttp({ type: 'ERROR', errorMessage: 'Something went wrong!' });
     }
-  }, [filteredIngredients, ingredients]);
 
-  const addIngredientHandler = async (ingredient) => {
-    const response = await axios.post('https://food-22d6b.firebaseio.com/ingredients.json', ingredient);
-
-    setIngredients(prevState => [...prevState, {
-      id: response.name,
-      ...ingredient
-    }]);
-  }
-
-  const removeIngredientHandler = id => {
-    setIngredients(prevIngredients => prevIngredients.filter(ig => ig.id !== id));
   };
 
-  const filterIngredientsHandler = value => {
-    setFilteredIngredients(ingredients.filter(ig => ig.title.includes(value)))
+  const removeIngredientHandler = ingredientId => {
+    dispatchHttp({ type: 'SEND' });
+    fetch(
+      `https://react-hooks-update.firebaseio.com/ingredients/${ingredientId}.json`,
+      {
+        method: 'DELETE'
+      }
+    )
+      .then(response => {
+        dispatchHttp({ type: 'RESPONSE' });
+        // setUserIngredients(prevIngredients =>
+        //   prevIngredients.filter(ingredient => ingredient.id !== ingredientId)
+        // );
+        dispatch({ type: 'DELETE', id: ingredientId });
+      })
+      .catch(error => {
+        dispatchHttp({ type: 'ERROR', errorMessage: 'Something went wrong!' });
+      });
+  };
+
+  const clearError = () => {
+    dispatchHttp({ type: 'CLEAR' });
   };
 
   return (
     <div className="App">
-      <IngredientForm onAddIngredient={addIngredientHandler} />  
+      {httpState.error && (
+        <ErrorModal onClose={clearError}>{httpState.error}</ErrorModal>
+      )}
+
+      <IngredientForm
+        onAddIngredient={addIngredientHandler}
+        loading={httpState.loading}
+      />
+
       <section>
-        <Search onSearch={filterIngredientsHandler}/>
-        <IngredientList ingredients={ingredientsToDisplay} onRemoveItem={removeIngredientHandler} />
-     </section>
+        <Search onLoadIngredients={filteredIngredientsHandler} />
+        <IngredientList
+          ingredients={userIngredients}
+          onRemoveItem={removeIngredientHandler}
+        />
+      </section>
     </div>
   );
-}
+};
 
 export default Ingredients;
