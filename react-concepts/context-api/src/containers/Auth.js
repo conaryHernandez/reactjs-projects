@@ -1,19 +1,32 @@
 import React, { Component } from 'react';
-import {UserConsumer} from '../context/UserContext';
+import {UserConsumer, UserContext} from '../context/UserContext';
 
-class App extends Component {
+class Auth extends Component {
+    static contextType = UserContext;
+
+    loginHandler = () => {
+        const {login} = this.context;
+
+        login();
+    }
+
     render() {
         return(
-            <UserConsumer>
-            { context => {
-                console.log(context);
+            <div>
+                <UserConsumer>
+                { context => {
+                    console.log(context);
 
-                return <h1>{context.name}</h1>
-            }}
+                    return <h1>{context.name}</h1>
+                }}
 
-            </UserConsumer>
+                </UserConsumer>
+                <h1>New test: {this.context.name}</h1>
+                <button onClick={this.loginHandler}>Trigger Action</button>
+
+            </div>
         );
     }
 }
 
-export default App;
+export default Auth;
