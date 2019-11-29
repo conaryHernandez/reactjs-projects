@@ -41,16 +41,16 @@ export const buildFormElement = (
     let options = {};
 
     options = {
-    elementType: inputType,
-    elementConfig: {
-        type: type,
-        placeholder: placeholder,
-        ...additionalProperties
-    },
-    value,
-    validations,
-    valid: false,
-    touched: false,
+        elementType: inputType,
+        elementConfig: {
+            type: type,
+            placeholder: placeholder,
+            ...additionalProperties
+        },
+        value,
+        validations,
+        valid: false,
+        touched: false,
     };
 
     return options;

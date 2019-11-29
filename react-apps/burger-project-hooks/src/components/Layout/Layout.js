@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { connect } from 'react-redux';
 
 import Aux from '../../hoc/Auxiliar';
@@ -6,41 +6,33 @@ import classes from './Layout.css';
 import Toolbar from '../Navigation/Toolbar/ToolBar';
 import SideDrawer from '../Navigation/SideDrawer/SideDrawer';
 
-class layout extends Component {
-    state = {
-        showSideDrawer: false,
+const Layout = (props) => {
+    const [ showSideDrawer, setShowSideDrawer ] = useState(false);
+
+    const sideDrawerClosedHandler = () => {   
+        setShowSideDrawer(false);
     }
 
-    sideDrawerClosedHandler = () => {   
-        this.setState({ showSideDrawer: false});
+    const sideDrawerOpenedHandler = () => {   
+        setShowSideDrawer(!showSideDrawer);
     }
 
-    sideDrawerOpenedHandler = () => {   
-        this.setState((prevState) => {
-            return {
-                showSideDrawer: !prevState.showSideDrawer
-            };
-        });
-    }
-
-    render() {
-        return (
-            <Aux>
-                <SideDrawer
-                    open={this.state.showSideDrawer}
-                    closed={this.sideDrawerClosedHandler}
-                    isAuthenticated={this.props.isAuthenticated}
-                />
-                <Toolbar
-                    isAuthenticated={this.props.isAuthenticated}
-                    toggle={this.sideDrawerOpenedHandler}
-                />
-                <main className={classes.Content}>
-                    {this.props.children}
-                </main>
-            </Aux>    
-        );
-    }
+    return (
+        <Aux>
+            <SideDrawer
+                open={showSideDrawer}
+                closed={sideDrawerClosedHandler}
+                isAuthenticated={props.isAuthenticated}
+            />
+            <Toolbar
+                isAuthenticated={props.isAuthenticated}
+                toggle={sideDrawerOpenedHandler}
+            />
+            <main className={classes.Content}>
+                {props.children}
+            </main>
+        </Aux>    
+    );
 }
 
 const mapStateToProps = state => {
@@ -49,4 +41,4 @@ const mapStateToProps = state => {
     };
 };
 
-export default connect(mapStateToProps)(layout);
+export default connect(mapStateToProps)(Layout);
