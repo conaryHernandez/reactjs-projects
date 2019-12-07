@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
+import React, { useState, useEffect, useCallback } from 'react';
+import { connect, useSelector, useDispatch } from 'react-redux';
 
 import Aux from '../../hoc/Auxiliar';
 import Burger from '../../components/Burger/Burger';
@@ -12,16 +12,31 @@ import axios from '../../axios-orders';
 
 const BurgerBuilder = (props) => {
     const [ purchasing, setPurchasing ] = useState(false);
+    const dispatch = useDispatch();
+
+    const ings = useSelector(state => state.burgerBuilder.ingredients);
+    const totalPrice = useSelector(state => state.burgerBuilder.totalPrice);
+    const error = useSelector(state => state.burgerBuilder.error);
+    const isAuth = useSelector(state => state.auth.token !== '');
+
+    const onIngredientAdded =  (ingredientName) => () => dispatch(actions.addIngredient(ingredientName));
+    const onIngredientRemoved =  (ingredientName) => () => dispatch(actions.removeIngredient(ingredientName));
+    const onInitIngredients =  useCallback(
+        () => dispatch(actions.initIngridients()),
+        [dispatch],
+    )
+    const onPurchaseInit =  () => dispatch(actions.purchaseInit());
+    const onSetRedirectPath =  (path) => dispatch(actions.setAuthRedirect(path));
 
     useEffect(() => {
-        props.onInitIngredients();
-    }, [])
+        onInitIngredients();
+    }, [onInitIngredients])
 
     const purchaseHandler = () => {
-        if (props.isAuth) {
+        if (isAuth) {
             setPurchasing(true);
         } else {
-            props.onSetRedirectPath('/checkout');
+            onSetRedirectPath('/checkout');
             props.history.push('/auth');
         }
     }
@@ -31,13 +46,13 @@ const BurgerBuilder = (props) => {
     }
 
     const purchaseContinueHandler = () => {
-        props.onPurchaseInit();
+        onPurchaseInit();
         props.history.push('/checkout');
     }
 
     const isDisabled = () => {
         const disabledInfo = {
-            ...props.ings
+            ...ings
         };
 
         for (let key in disabledInfo) {
@@ -49,27 +64,27 @@ const BurgerBuilder = (props) => {
 
     let orderSummary = (
         <OrderSummary
-            ingredients={props.ings}
+            ingredients={ings}
             purchaseCancelled={purchaseCancelHandler}
             purchaseContinued={purchaseContinueHandler}
-            totalPrice={props.totalPrice.toFixed(2) || 0}
+            totalPrice={totalPrice.toFixed(2) || 0}
         />
     );
     let burgerContent = (
         <Aux>
-            <Burger ingredients={props.ings} />
+            <Burger ingredients={ings} />
             <BuildControls
-                ingredientAdded={props.onIngredientAdded}
-                ingredientRemoved={props.onIngredientRemoved}
-                totalPrice={props.totalPrice}
-                purchasabled={props.totalPrice > 0}
+                ingredientAdded={onIngredientAdded}
+                ingredientRemoved={onIngredientRemoved}
+                totalPrice={totalPrice}
+                purchasabled={totalPrice > 0}
                 ordered={purchaseHandler}
-                isAuth={props.isAuth}
+                isAuth={isAuth}
                 disabled={isDisabled()}
             />
         </Aux>
     );
-    let burger = props.error ? <p>Ingredients can't be loaded!</p> : burgerContent;
+    let burger = error ? <p>Ingredients can't be loaded!</p> : burgerContent;
 
     return (
         <Aux>

@@ -8,9 +8,11 @@ import * as actions from '../../store/actions/index';
 import Spinner from '../../components/UI/Spinner/Spinner';
 
 const Orders = (props) => {
+	const { onInitOrders } = props;
+
 	useEffect(() => {
-		props.onInitOrders(props.token, props.userId);
-	}, [])
+		onInitOrders(props.token, props.userId);
+	}, [onInitOrders])
 
 	const buildOrders = () => {
 		let orders = null;

@@ -15,12 +15,13 @@ const Auth = (props) => {
     });
     const [isSignup, setIsSignup] = useState(true);
     const [formIsValid, setFormIsValid] = useState(false);
+    const { onSetAuthRedirect, buildingBurger, authRedirect } = props;
 
     useEffect(() => {
-        if(!props.buildingBurger && props.authRedirect) {
-            props.onSetAuthRedirect()
+        if(!buildingBurger && authRedirect) {
+            onSetAuthRedirect()
         }
-    }, [])
+    }, [onSetAuthRedirect, buildingBurger, authRedirect])
 
     const inputChangedHandler = (event) => {
         const { name, value} = event.target;
@@ -67,7 +68,7 @@ const Auth = (props) => {
     }
 
     if(props.isAuth) {
-        return <Redirect to={props.authRedirect} />;
+        return <Redirect to={authRedirect} />;
     }
 
     return(
